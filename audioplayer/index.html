@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Audio Player</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #1e2124;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        li {
+            margin: 5px;
+            flex: 0 0 calc(33.33% - 10px);
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #1db954;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1ed760;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        div {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Browser Audio Player</h1>
+
+    <!-- Audio Player Controls -->
+    <audio id="audio-player" controls>
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Song List Toggle Button -->
+    <button id="toggle-button" onclick="toggleSongList()">Show Songs</button>
+
+    <!-- Song List -->
+    <ul id="song-list">
+        <!-- JavaScript will generate buttons here -->
+    </ul>
+
+    <!-- Control Buttons -->
+    <div>
+        <button onclick="audioPlayer.play()">Play</button>
+        <button onclick="audioPlayer.pause()">Pause</button>
+        <button onclick="playPrevious()">Previous</button>
+        <button onclick="playNext()">Next</button>
+        <button onclick="shuffleSongs()">Shuffle</button>
+    </div>
+
+    <script>
+        // JavaScript functions for audio control
+        const audioPlayer = document.getElementById('audio-player');
+        const songList = document.getElementById('song-list');
+        const toggleButton = document.getElementById('toggle-button');
+        let currentSongIndex = 0;
+        let songs = generateSongNames(48);
+
+        // Function to generate song names
+        function generateSongNames(count) {
+            const songNames = [];
+            for (let i = 1; i <= count; i++) {
+                songNames.push(`Song${i}.mp3`);
+            }
+            return songNames;
+        }
+
+        // Function to generate buttons for each song
+        function generateButtons() {
+            songList.innerHTML = '';
+            for (let i = 0; i < songs.length; i++) {
+                const songFilename = songs[i];
+                const button = document.createElement('button');
+                button.textContent = `Play ${songFilename.substring(4)}`; // Remove "song" prefix
+                button.addEventListener('click', () => playSong(songFilename));
+                const listItem = document.createElement('li');
+                listItem.appendChild(button);
+                songList.appendChild(listItem);
+            }
+        }
+
+        // Function to play the selected song
+        function playSong(songFilename) {
+            audioPlayer.src = `http://localhost:8000/music/${songFilename}`;
+            audioPlayer.play();
+            currentSongIndex = songs.indexOf(songFilename);
+        }
+
+        // Function to play the previous song
+        function playPrevious() {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            playSong(songs[currentSongIndex]);
+        }
+
+        // Function to play the next song
+        function playNext() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            playSong(songs[currentSongIndex]);
+        }
+
+        // Function to shuffle the songs starting from the currently playing song
+        function shuffleSongs() {
+            let shuffledSongs = [...songs];
+            let currentIndex = currentSongIndex;
+            for (let i = shuffledSongs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledSongs[i], shuffledSongs[j]] = [shuffledSongs[j], shuffledSongs[i]];
+            }
+            const currentSongShuffledIndex = shuffledSongs.indexOf(songs[currentIndex]);
+            [shuffledSongs[0], shuffledSongs[currentSongShuffledIndex]] = [shuffledSongs[currentSongShuffledIndex], shuffledSongs[0]];
+            songs = shuffledSongs;
+            currentSongIndex = 0;
+            playSong(songs[currentSongIndex]);
+        }
+
+        // Function to toggle the visibility of the song list
+        function toggleSongList() {
+            if (songList.style.display === 'none') {
+                songList.style.display = 'flex';
+                toggleButton.textContent = 'Hide Songs';
+            } else {
+                songList.style.display = 'none';
+                toggleButton.textContent = 'Show Songs';
+            }
+        }
+
+        // Generate buttons on page load
+        generateButtons();
+    </script>
+</body>
+</html>
+
